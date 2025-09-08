@@ -135,7 +135,7 @@ def main():
 
     # Flags for controlling teleoperation flow
     should_reset_recording_instance = False
-    teleoperation_active = True
+    teleoperation_active = False  # 初始设置为False，需要用户明确激活才开始远程操作
 
     # Callback handlers
     def reset_recording_instance():
