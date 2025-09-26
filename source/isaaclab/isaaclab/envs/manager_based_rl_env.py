@@ -183,7 +183,7 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
         for _ in range(self.cfg.decimation):
             self._sim_step_counter += 1
             # set actions into buffers
-            self.action_manager.apply_action()
+            self.action_manager.apply_action() # REVIEW: 这里动作的施加逻辑我有待厘清
             # set actions into simulator
             self.scene.write_data_to_sim()
             # simulate
