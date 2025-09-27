@@ -163,7 +163,8 @@ class JointPositionToLimitsAction(ActionTerm):
             )
             self._processed_actions[:] = actions[:]
 
-    def apply_actions(self):
+    # 分离设计模式。在 ActionManager 中的调用顺序：先调用process_actions进行动作预处理，再调用apply_actions进行应用
+    def apply_actions(self): # 间接依赖process_actions但不直接调用
         # set position targets
         self._asset.set_joint_position_target(self.processed_actions, joint_ids=self._joint_ids)
 
