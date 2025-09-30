@@ -1051,7 +1051,7 @@ def reset_root_state_with_random_orientation(
     env_ids: torch.Tensor,
     pose_range: dict[str, tuple[float, float]],
     velocity_range: dict[str, tuple[float, float]],
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"), # 也可以是object
 ):
     """Reset the asset root position and velocities sampled randomly within the given ranges
     and the asset root orientation sampled randomly from the SO(3).

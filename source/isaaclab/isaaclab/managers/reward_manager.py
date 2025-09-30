@@ -121,7 +121,7 @@ class RewardManager(ManagerBase):
             self._episode_sums[key][env_ids] = 0.0
         # reset all the reward terms
         for term_cfg in self._class_term_cfgs:
-            term_cfg.func.reset(env_ids=env_ids)
+            term_cfg.func.reset(env_ids=env_ids) # IDEA: 触发奖励项reset回调
         # return logged information
         return extras
 
