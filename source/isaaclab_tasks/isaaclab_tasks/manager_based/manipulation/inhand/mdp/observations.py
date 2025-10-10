@@ -32,7 +32,7 @@ def goal_quat_diff(
     goal_quat_w = command_term.command[:, 3:7]
     asset_quat_w = asset.data.root_quat_w
 
-    # compute quaternion difference
+    # compute quaternion difference TODO: 可能是反向的误差，我认为实际应该是q_goal * q_asset^-1
     quat = math_utils.quat_mul(asset_quat_w, math_utils.quat_conjugate(goal_quat_w))
     # make sure the quaternion real-part is always positive
     return math_utils.quat_unique(quat) if make_quat_unique else quat
