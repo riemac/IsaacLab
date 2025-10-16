@@ -91,6 +91,6 @@ def track_orientation_inv_l2(
     # obtain the goal orientation
     goal_quat_w = command_term.command[:, 3:7]
     # calculate the orientation error
-    dtheta = math_utils.quat_error_magnitude(asset.data.root_quat_w, goal_quat_w)
+    dtheta = math_utils.quat_error_magnitude(asset.data.root_quat_w, goal_quat_w) # 轴角表示，L2范数
 
     return 1.0 / (dtheta + rot_eps)
