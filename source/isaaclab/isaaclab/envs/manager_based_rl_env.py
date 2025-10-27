@@ -199,7 +199,7 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
 
         # post-step:
         # -- update env counters (used for curriculum generation)
-        self.episode_length_buf += 1  # step in current episode (per env)
+        self.episode_length_buf += 1  # step in current episode (per env) 记录的是每个环境当前episode已经执行的步数
         self.common_step_counter += 1  # total step (common for all envs)
         # -- check terminations
         self.reset_buf = self.termination_manager.compute()
@@ -391,4 +391,4 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
         self.extras["log"].update(info)
 
         # reset the episode length buffer
-        self.episode_length_buf[env_ids] = 0
+        self.episode_length_buf[env_ids] = 0  # 当环境重置时，对应环境的计数器归零

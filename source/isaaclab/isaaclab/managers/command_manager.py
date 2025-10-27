@@ -117,7 +117,7 @@ class CommandTerm(ManagerTermBase):
         # return success
         return True
 
-    def reset(self, env_ids: Sequence[int] | None = None) -> dict[str, float]:
+    def reset(self, env_ids: Sequence[int] | None = None) -> dict[str, float]: # 环境重置时会调用。这里传递的env_ids是需要重置的环境id
         """Reset the command generator and log metrics.
 
         This function resets the command counter and resamples the command. It should be called
@@ -331,7 +331,7 @@ class CommandManager(ManagerBase):
         for term in self._terms.values():
             term.set_debug_vis(debug_vis)
 
-    def reset(self, env_ids: Sequence[int] | None = None) -> dict[str, torch.Tensor]:
+    def reset(self, env_ids: Sequence[int] | None = None) -> dict[str, torch.Tensor]: # 重置时会调用，从而调用每个命令项的reset
         """Reset the command terms and log their metrics.
 
         This function resets the command counter and resamples the command for each term. It should be called
