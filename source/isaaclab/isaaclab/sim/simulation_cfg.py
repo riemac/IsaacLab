@@ -33,7 +33,7 @@ class PhysxCfg:
     .. _PhysX 5 SDK documentation: https://nvidia-omniverse.github.io/PhysX/physx/5.4.1/_api_build/classPxSceneDesc.html
 
     """
-
+    # 求解器类型与迭代参数
     solver_type: Literal[0, 1] = 1
     """The type of solver to use.Default is 1 (TGS).
 
@@ -82,7 +82,8 @@ class PhysxCfg:
         the number of iterations specified by the actor with the highest iteration and clamps it to
         the range ``[min_velocity_iteration_count, max_velocity_iteration_count]``.
     """
-
+    
+    # 物理行为控制参数
     enable_ccd: bool = False
     """Enable a second broad-phase pass that makes it possible to prevent objects from tunneling through each other.
     Default is False."""
@@ -116,6 +117,7 @@ class PhysxCfg:
     friction_correlation_distance: float = 0.025
     """Distance threshold for merging contacts into a single friction anchor point (in m). Default is 0.025 m."""
 
+    # GPU 缓冲区参数
     gpu_max_rigid_contact_count: int = 2**23
     """Size of rigid contact stream buffer allocated in pinned host memory. Default is 2 ** 23."""
 
@@ -160,6 +162,7 @@ class PhysxCfg:
     gpu_max_particle_contacts: int = 2**20
     """Size of particle contacts stream buffer allocated in pinned host memory. Default is 2 ** 20."""
 
+    # 关节求解顺序
     solve_articulation_contact_last: bool = False
     """Changes the ordering inside the articulation solver. Default is False.
 
