@@ -214,6 +214,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     torchrl_env = make_torchrl_env(env, device=device)  # type: ignore[arg-type]
     torchrl_env.set_seed(seed)
+    
+    # 保存原始环境的 max_episode_length 用于数据收集配置
+    max_episode_length = getattr(env.unwrapped, 'max_episode_length', None)
 
     # 检测是否为非对称 Actor-Critic（有 policy/critic 观测组）
     obs_spec_keys = list(torchrl_env.observation_spec.keys())
@@ -231,15 +234,21 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     
     action_key = split_key(agent_cfg.get("action_key", "action"))
 
+    # 获取观测和动作的规格说明
     policy_obs_spec = select_spec(torchrl_env.observation_spec, policy_obs_key)
     critic_obs_spec = select_spec(torchrl_env.observation_spec, critic_obs_key) if has_asymmetric_obs else policy_obs_spec
-    action_spec = select_spec(torchrl_env.action_spec, action_key)
-    policy_obs_dim = flatten_size(policy_obs_spec.shape)
-    critic_obs_dim = flatten_size(critic_obs_spec.shape)
+    
+    # 对于 action_spec，获取 unbatched 版本（不含 num_envs 维度）
+    # 直接使用环境提供的 action_spec_unbatched 属性
+    action_spec_unbatched = torchrl_env.action_spec_unbatched
+    
+    # 计算观测维度（跳过 batch 维度，即第一个维度）
+    policy_obs_dim = flatten_size(policy_obs_spec.shape[1:])
+    critic_obs_dim = flatten_size(critic_obs_spec.shape[1:])
 
     policy_cfg = agent_cfg.get("policy_model", {})
     value_cfg = agent_cfg.get("value_model", {})
-    policy_module = build_actor(policy_obs_key, action_key, action_spec, policy_obs_dim, policy_cfg, device)
+    policy_module = build_actor(policy_obs_key, action_key, action_spec_unbatched, policy_obs_dim, policy_cfg, device)
     value_module = build_critic(critic_obs_key, critic_obs_dim, value_cfg, device)
 
     loss_cfg = agent_cfg.get("ppo", {})
@@ -278,7 +287,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     init_random_frames = collector_cfg.get("init_random_frames", 0)
     max_frames_per_traj = collector_cfg.get("max_frames_per_traj")
     if max_frames_per_traj in (None, 0):
-        max_frames_per_traj = torchrl_env.max_steps or None
+        max_frames_per_traj = max_episode_length or None
 
     collector = SyncDataCollector(
         torchrl_env,
@@ -321,7 +330,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
                         length = min(minibatch_size, num_samples - start)
                         if length <= 0:
                             continue
-                        batch = cast(TensorDictBase, rollout.narrow(0, start, length))
+                        # 使用切片语法而不是 .narrow()
+                        batch = cast(TensorDictBase, rollout[start : start + length])
                         if batch.batch_size[0] == 0:
                             continue
                         optimizer.zero_grad()
@@ -338,10 +348,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
                 global_frames += frames_in_batch
                 update_idx += 1
 
-                reward_tensor = data["reward"]
-                if reward_tensor.ndim > 2:
-                    reward_tensor = reward_tensor.squeeze(-1)
-                mean_reward = reward_tensor.sum(dim=0).mean().item()
+                reward_key = ("next", loss_module.tensor_keys.reward)
+                reward_tensor = data.get(reward_key, default=None)
+                if reward_tensor is None:
+                    reward_tensor = data.get(loss_module.tensor_keys.reward, default=None)
+
+                if reward_tensor is not None:
+                    if reward_tensor.ndim > 2:
+                        reward_tensor = reward_tensor.squeeze(-1)
+                    mean_reward = reward_tensor.mean().item()
+                else:
+                    mean_reward = float("nan")
                 if update_idx % args_cli.log_interval == 0:
                     print(
                         f"[TorchRL] update={update_idx} frames={global_frames} mean_reward={mean_reward:.3f}"
