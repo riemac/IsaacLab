@@ -121,7 +121,6 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 import gymnasium as gym
-import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -335,7 +334,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
                         optimizer.step()
                         _accumulate_metrics(metrics_accumulator, losses)
 
-                frames_in_batch = int(np.prod(data.batch_size))
+                frames_in_batch = data.batch_size.numel()
                 global_frames += frames_in_batch
                 update_idx += 1
 
