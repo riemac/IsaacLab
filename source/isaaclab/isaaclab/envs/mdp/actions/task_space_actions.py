@@ -60,7 +60,7 @@ class DifferentialInverseKinematicsAction(ActionTerm):
         self._num_joints = len(self._joint_ids)
         # parse the body index
         body_ids, body_names = self._asset.find_bodies(self.cfg.body_name)
-        if len(body_ids) != 1:
+        if len(body_ids) != 1:  # 只接受单个刚体名称，意味着主要为单末端执行器设计
             raise ValueError(
                 f"Expected one match for the body name: {self.cfg.body_name}. Found {len(body_ids)}: {body_names}."
             )

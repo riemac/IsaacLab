@@ -274,7 +274,7 @@ class RlGamesVecEnvWrapper(IVecEnv):
         actions = actions.detach().clone().to(device=self._sim_device)
         # clip the actions
         actions = torch.clamp(actions, -self._clip_actions, self._clip_actions)
-        # perform environment step
+        # perform environment step 调用底层 IsaacLab 环境
         obs_dict, rew, terminated, truncated, extras = self.env.step(actions)
 
         # move time out information to the extras dict
