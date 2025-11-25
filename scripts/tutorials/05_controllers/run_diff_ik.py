@@ -116,9 +116,10 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
     current_goal_idx = 0
     # Create buffers to store actions
     ik_commands = torch.zeros(scene.num_envs, diff_ik_controller.action_dim, device=robot.device)
-    ik_commands[:] = ee_goals[current_goal_idx]
+    ik_commands[:] = ee_goals[current_goal_idx]  # 对所有维度完整切片，获取整个张量的视图，并利用广播机制对所有环境设置相同的初始目标
 
-    # Specify robot-specific parameters
+    # Specify robot-specific parameters  
+    # IDEA: 这里指定了机器人末端执行器的body和joint名称，以便后续解析
     if args_cli.robot == "franka_panda":
         robot_entity_cfg = SceneEntityCfg("robot", joint_names=["panda_joint.*"], body_names=["panda_hand"])
     elif args_cli.robot == "ur10":
@@ -158,17 +159,18 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
             # change goal
             current_goal_idx = (current_goal_idx + 1) % len(ee_goals)
         else:
-            # obtain quantities from simulation
-            jacobian = robot.root_physx_view.get_jacobians()[:, ee_jacobi_idx, :, robot_entity_cfg.joint_ids]
-            ee_pose_w = robot.data.body_pose_w[:, robot_entity_cfg.body_ids[0]]
-            root_pose_w = robot.data.root_pose_w
-            joint_pos = robot.data.joint_pos[:, robot_entity_cfg.joint_ids]
-            # compute frame in root frame
-            ee_pos_b, ee_quat_b = subtract_frame_transforms(
-                root_pose_w[:, 0:3], root_pose_w[:, 3:7], ee_pose_w[:, 0:3], ee_pose_w[:, 3:7]
+            # obtain quantities from simulation  1.从仿真中获取运动学状态
+            jacobian = robot.root_physx_view.get_jacobians()[:, ee_jacobi_idx, :, robot_entity_cfg.joint_ids]  # 获取末端执行器(EE)对应的雅可比矩阵
+            ee_pose_w = robot.data.body_pose_w[:, robot_entity_cfg.body_ids[0]]  # 获取末端执行器在世界坐标系下的位姿
+            root_pose_w = robot.data.root_pose_w  # 获取机器人根部(base)在世界坐标系下的位姿
+            joint_pos = robot.data.joint_pos[:, robot_entity_cfg.joint_ids]  # 获取机器人关节位置
+            # compute frame in root frame  2.坐标系转换：世界坐标系 → 根部坐标系
+            ee_pos_b, ee_quat_b = subtract_frame_transforms(  # 末端执行器相对于机器人根部的位姿
+                root_pose_w[:, 0:3], root_pose_w[:, 3:7],  # 根部在世界坐标系下的位姿
+                ee_pose_w[:, 0:3], ee_pose_w[:, 3:7]  # 末端执行器在世界坐标系下的位姿
             )
-            # compute the joint commands
-            joint_pos_des = diff_ik_controller.compute(ee_pos_b, ee_quat_b, jacobian, joint_pos)
+            # compute the joint commands  3.差分逆运动学求解
+            joint_pos_des = diff_ik_controller.compute(ee_pos_b, ee_quat_b, jacobian, joint_pos)  # 增量式IK，每一步重新计算目标关节位置
 
         # apply actions
         robot.set_joint_position_target(joint_pos_des, joint_ids=robot_entity_cfg.joint_ids)

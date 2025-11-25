@@ -13,7 +13,7 @@ from isaaclab.utils import configclass
 
 
 @configclass
-class SceneEntityCfg:
+class SceneEntityCfg:  # 用来给管理器的term指定场景实体
     """Configuration for a scene entity that is used by the manager's term.
 
     This class is used to specify the name of the scene entity that is queried from the
