@@ -151,7 +151,7 @@ class ArticulationData:
     This quantity is parsed from the USD schema at the time of initialization.
     """
 
-    default_inertia: torch.Tensor = None
+    default_inertia: torch.Tensor = None  # 单刚体惯性张量 I_b
     """Default inertia for all the bodies in the articulation. Shape is (num_instances, num_bodies, 9).
 
     The inertia tensor should be given with respect to the center of mass, expressed in the articulation links' actor frame.

@@ -115,7 +115,7 @@ class JointAction(ActionTerm):
     """
 
     @property
-    def action_dim(self) -> int:
+    def action_dim(self) -> int:  # 这里指定动作维度为关节数，以适应不同关节数量的机器人类型
         return self._num_joints
 
     @property

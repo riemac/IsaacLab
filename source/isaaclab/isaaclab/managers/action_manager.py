@@ -72,13 +72,13 @@ class ActionTerm(ManagerTermBase):
 
     @property
     @abstractmethod
-    def action_dim(self) -> int:
+    def action_dim(self) -> int:  # 这里指定了动作维度
         """Dimension of the action term."""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def raw_actions(self) -> torch.Tensor:
+    def raw_actions(self) -> torch.Tensor:  # 这个是从rl库传来的策略输出动作
         """The input/raw actions sent to the term."""
         raise NotImplementedError
 

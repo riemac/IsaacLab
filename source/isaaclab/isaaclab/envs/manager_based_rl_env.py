@@ -107,7 +107,7 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
     Operations - Setup.
     """
 
-    def load_managers(self):
+    def load_managers(self):  # 在初始化时调用
         # note: this order is important since observation manager needs to know the command and action managers
         # and the reward manager needs to know the termination manager
         # -- command manager
@@ -129,7 +129,7 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
         print("[INFO] Curriculum Manager: ", self.curriculum_manager)
 
         # setup the action and observation spaces for Gym
-        self._configure_gym_env_spaces()
+        self._configure_gym_env_spaces()  # 设置动作空间和观察空间，其维度聚合计算
 
         # perform events at the start of the simulation
         if "startup" in self.event_manager.available_modes:
@@ -340,7 +340,7 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
                     term_dict[term_name] = gym.spaces.Box(low=low, high=high, shape=term_dim)
                 self.single_observation_space[group_name] = gym.spaces.Dict(term_dict)
         # action space (unbounded since we don't impose any limits)
-        action_dim = sum(self.action_manager.action_term_dim)
+        action_dim = sum(self.action_manager.action_term_dim)  # 自动聚合动作维度信息
         self.single_action_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(action_dim,))
 
         # batch the spaces for vectorized environments

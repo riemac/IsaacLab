@@ -140,15 +140,15 @@ class DifferentialInverseKinematicsAction(ActionTerm):
         return self._processed_actions
 
     @property
-    def jacobian_w(self) -> torch.Tensor:
+    def jacobian_w(self) -> torch.Tensor:  # 相对于全局仿真世界坐标系表示的几何雅可比矩阵（参考点在末端，参考系在world）
         return self._asset.root_physx_view.get_jacobians()[:, self._jacobi_body_idx, :, self._jacobi_joint_ids]
 
     @property
-    def jacobian_b(self) -> torch.Tensor:
+    def jacobian_b(self) -> torch.Tensor:  # 相对于各环境实例的机器人基座（Base/Root）坐标系表示的几何雅可比矩阵（参考点在{b},参考系在{s})
         jacobian = self.jacobian_w
         base_rot = self._asset.data.root_quat_w
         base_rot_matrix = math_utils.matrix_from_quat(math_utils.quat_inv(base_rot))
-        jacobian[:, :3, :] = torch.bmm(base_rot_matrix, jacobian[:, :3, :])
+        jacobian[:, :3, :] = torch.bmm(base_rot_matrix, jacobian[:, :3, :])  # 这里只考虑了速度的影响，故未处理位移
         jacobian[:, 3:, :] = torch.bmm(base_rot_matrix, jacobian[:, 3:, :])
         return jacobian
 
