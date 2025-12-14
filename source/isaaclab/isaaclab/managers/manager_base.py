@@ -104,7 +104,7 @@ class ManagerTermBase(ABC):
         """General serialization call. Includes the configuration dict."""
         return {"cfg": class_to_dict(self.cfg)}
 
-    def __call__(self, *args) -> Any:
+    def __call__(self, *args) -> Any:  # 没有去调用 __call__，就不会报错。NotImplementedError 只有在实际执行 instance() 时才会触发
         """Returns the value of the term required by the manager.
 
         In case of a class implementation, this function is called by the manager
