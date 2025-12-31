@@ -303,7 +303,7 @@ class RecorderManager(ManagerBase):
         """
         return self._episodes.get(env_id, EpisodeData())
 
-    def add_to_episodes(self, key: str, value: torch.Tensor | dict, env_ids: Sequence[int] | None = None):
+    def add_to_episodes(self, key: str, value: torch.Tensor | dict, env_ids: Sequence[int] | None = None):  # 在这里记录数据
         """Adds the given key-value pair to the episodes for the given environment ids.
 
         Args:

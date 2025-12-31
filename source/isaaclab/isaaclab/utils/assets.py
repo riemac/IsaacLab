@@ -27,8 +27,19 @@ import omni.client
 # import logger
 logger = logging.getLogger(__name__)
 
+_asset_root_cloud = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
+# NOTE:
+# Isaac Lab assets can be hosted on omniverse-content-production (S3). In some headless
+# deployments, USD reference loading for the HTTPS scheme may fail even though the
+# endpoint is reachable, causing referenced prims to be empty.
+# We normalize this specific domain to HTTP to improve resolver compatibility.
+if isinstance(_asset_root_cloud, str) and _asset_root_cloud.startswith(
+    "https://omniverse-content-production.s3-us-west-2.amazonaws.com/"
+):
+    _asset_root_cloud = _asset_root_cloud.replace("https://", "http://", 1)  # 这处是源码修改，如果没替换成http，训练时会报错
+
 # NUCLEUS_ASSET_ROOT_DIR = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0" # 4.5版本的资产失效了
-NUCLEUS_ASSET_ROOT_DIR = carb.settings.get_settings().get("/persistent/isaac/asset_root/cloud")
+NUCLEUS_ASSET_ROOT_DIR = _asset_root_cloud
 """Path to the root directory on the Nucleus Server."""
 
 NVIDIA_NUCLEUS_DIR = f"{NUCLEUS_ASSET_ROOT_DIR}/NVIDIA"
